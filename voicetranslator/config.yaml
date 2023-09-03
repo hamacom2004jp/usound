@@ -1,0 +1,5 @@
+voicetranslator:
+    common:
+        MODEL_SIZE: small # small, large-v2, medium.en, base, tiny, large-v1, medium, small.en, base.en, tiny.en
+        CALC_DEVICE: cpu # cuda, cpu
+        COMPUTE_TYPE: int8 # float16, int8_float16, int8

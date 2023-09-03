@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="assets/bootstrap/bootstrap.min.5.0.2.css" crossorigin="anonymous">
+    <script type="text/javascript" src="/eel.js"></script>
+    <script type="text/javascript" src="assets/bootstrap/bootstrap.bundle.min.5.0.2.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="assets/jquery/jquery.min.3.2.0.js" crossorigin="anonymous"></script>
+
+    <title>Voice Translator App</title>
+</head>
+
+<body lang="en">
+    <div class="container vh-100 w-100 p-0 m-0">
+        <div class="row vw-100 m-0" style="height: 38px">
+            <div class="col-9">
+                <select id="in_speaker" class="form-select">
+                </select>
+            </div>
+            <div class="col-3">
+                <select id="in_duration" class="form-select">
+                    <option value="1">1 s</option>
+                    <option value="2">2 s</option>
+                    <option value="3">3 s</option>
+                    <option value="5">5 s</option>
+                    <option value="10">10 s</option>
+                </select>
+            </div>
+        </div>
+        <div class="row vw-100 m-0" style="height: calc(50% - 40px - 50px)">
+            <div class="col">
+                <textarea id="in_text" class="form-control h-100"></textarea>
+            </div>
+        </div>
+        <div class="row vw-100 m-0" style="height: 38px">
+            <div class="col">
+                <select id="mode_translate" class="form-select">
+                    <option value="e2j">English -> Japanese</option>
+                    <option value="j2e">Japanese -> English</option>
+                </select>
+            </div>
+        </div>
+        <div class="row vw-100 m-0" style="height: calc(50% - 40px)">
+            <div class="col">
+                <textarea id="out_text" class="form-control h-100"></textarea>
+            </div>
+        </div>
+        <div class="row vw-100 m-0" style="height: 50px">
+            <div class="col text-center">
+                <button id="stop_bot" type="button" class="btn btn-success btn-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-pause-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M5 6.25a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5zm3.5 0a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5z"/>
+                    </svg>
+                </button>
+                <button id="start_bot" type="button" class="btn btn-danger btn-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-record-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+<!--
+async function load_speaker_list(){
+	spakers = await eel.load_speaker_list()();
+	spname = await eel.get_default_speacker()();
+	console.log(spname)
+	$.each(spakers, function(i, sp){
+		selected = (spname == sp['name']) ? " selected" : "";
+		$('#in_speaker').append('<option '+selected+'>'+sp['name']+'</option>');
+	});
+}
+async function set_default_speacker(spname){
+	await eel.set_default_speacker(spname)();
+}
+async function load_duration(){
+	duration = await eel.load_duration()();
+	$('#in_duration').val(duration);
+}
+async function set_duration(duration){
+	await eel.set_duration(duration)();
+}
+async function start(spname, duration){
+	await eel.start(spname, duration)();
+}
+async function stop(){
+	await eel.stop()();
+}
+function write_intext(text){
+	org_text = $('#in_text').val();
+	org_text += text;
+	$('#in_text').val(text);
+}
+$(function(){
+	$('#stop_bot').hide().click(function(){
+		$('#stop_bot').hide();
+		$('#start_bot').show();
+	});
+	$('#start_bot').click(function(){
+		$('#stop_bot').show();
+		$('#start_bot').hide();
+	});
+	$('#in_speaker').change(function(){
+		set_default_speacker($(this).val());
+	})
+	$('#in_duration').change(function(){
+		set_duration($(this).val());
+	})
+	$('#start_bot').click(function(){
+		start($('#in_speaker').val(), $('#in_duration').val());
+	})
+	$('#stop_bot').click(function(){
+		stop();
+	})
+	load_speaker_list();
+	load_duration();
+	eel.expose(write_intext);
+});
+//-->
+</script>
+</html>

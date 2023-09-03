@@ -1,0 +1,31 @@
+# logconf.yml
+version: 1
+ 
+formatters:
+    fmt:
+        format: '[%(asctime)s] [%(levelname)s] %(message)s'
+        class: logging.Formatter
+handlers:
+    h1:
+        class: logging.StreamHandler
+        level: DEBUG
+        formatter: fmt
+        stream: ext://sys.stdout
+    h2:
+        class: logging.handlers.TimedRotatingFileHandler
+        level: DEBUG
+        formatter: fmt
+        backupCount: 5
+        when : 'D'
+        encoding : 'utf-8'
+        filename: app.log
+
+loggers:
+    peepdet:
+        handlers: [h2]
+        level: DEBUG
+        qualname: peepdet
+ 
+root:
+    handlers: [h1]
+    level: DEBUG

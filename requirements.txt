@@ -1,0 +1,8 @@
+eel
+faster-whisper
+numpy
+pyyaml
+sounddevice
+soundcard
+soundfile
+
