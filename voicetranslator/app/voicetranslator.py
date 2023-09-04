@@ -5,7 +5,9 @@ import numpy as np
 #import sounddevice as sd
 import soundcard as sc
 import soundfile as sf
+import time
 import threading
+import sys
 
 
 print(sc.all_speakers())
@@ -79,19 +81,29 @@ def run(spname, duration, status):
     samplerate = 48000
 
     while status[0]:
-        rec = sc.get_microphone(id=spname, include_loopback=True).record(samplerate=samplerate, numframes=samplerate * duration)
-        sf.write(wav_file, rec[:,0], samplerate)
-        print(f"save={wav_file}")
-        segments, _ = MODEL.transcribe(rec, vad_filter=True,
-                                   vad_parameters=dict(
-                                       threshold=0.5,
-                                       min_speech_duration_ms=250,
-                                       max_speech_duration_s=float("inf"),
-                                       min_silence_duration_ms=2000,
-                                       window_size_samples=1024,
-                                       speech_pad_ms=400
-                                   ))
-        print(segments)
+        with sc.get_microphone(id=spname, include_loopback=True).recorder(samplerate=samplerate) as mic:
+            rec = mic.record(numframes=samplerate * duration)
+            sf.write(wav_file, rec, samplerate)
+            print(f"save={wav_file}")
+            try:
+                segments, _ = MODEL.transcribe(
+                    rec,
+                    vad_filter=True,
+                    vad_parameters=dict(
+                        threshold=0.5,
+                        min_speech_duration_ms=250,
+                        max_speech_duration_s=float("inf"),
+                        min_silence_duration_ms=2000,
+                        window_size_samples=1024,
+                        speech_pad_ms=400))
+                print(segments)
+            except KeyboardInterrupt as e:
+                common.e_msg(e, common.logger)
+                stop()
+                sys.exit()
+            except Exception as e:
+                common.e_msg(e, common.logger)
+                time.sleep(1)
     """
     with sc.get_microphone(id=spname, include_loopback=True).recorder(samplerate=samplerate) as mic:
         common.logger.info(f"Recoder opened. id={spname}")

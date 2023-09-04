@@ -10,6 +10,17 @@ PCのスピーカーの音声を翻訳するアプリケーションです。
 
 ## ビルド方法
 
+### SoundCardのビルド
+```
+git clone https://github.com/bastibe/SoundCard.git
+cd SoundCard
+python -m venv .venv
+.venv\Scripts\activate
+python.exe -m pip install --upgrade pip setuptools wheel
+python setup.py bdist_wheel
+```
+```dist/SoundCard-0.4.2-py3-none-any.whl```ファイルをvoice-translatorのビルド環境構築にコピーする
+
 ### voice-translatorのビルド環境構築
 ```
 git clone https://github.com/hamacom2004jp/voice-translator.git
@@ -18,6 +29,7 @@ python -m venv .venv
 .venv\Scripts\activate
 python.exe -m pip install --upgrade pip
 pip install -r requirements.txt
+pip install SoundCard-0.4.2-py3-none-any.whl
 ```
 
 #### 開発環境でのpeepdetの実行方法

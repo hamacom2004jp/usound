@@ -41,5 +41,6 @@ def e_msg(e:Exception, logger):
 
 def load_model():
     logger.info(f"Load whisper model. MODEL_SIZE={MODEL_SIZE}, CALC_DEVICE={CALC_DEVICE}, COMPUTE_TYPE={COMPUTE_TYPE}")
-    model = WhisperModel(MODEL_SIZE, device=CALC_DEVICE, compute_type=COMPUTE_TYPE)
+    model_dir = mkdirs(APP_DATA_DIR / "model")
+    model = WhisperModel(MODEL_SIZE, device=CALC_DEVICE, compute_type=COMPUTE_TYPE, download_root=model_dir)
     return model

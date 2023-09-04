@@ -2,7 +2,7 @@ eel
 faster-whisper
 numpy
 pyyaml
-sounddevice
-soundcard
+#sounddevice
+#soundcard
 soundfile
 
