@@ -13,55 +13,84 @@
     <title>Voice Translator App</title>
 </head>
 
-<body lang="en">
+<body lang="en" class="overflow-hidden">
     <div class="container vh-100 w-100 p-0 m-0">
-        <div class="row vw-100 m-0" style="height: 38px">
-            <div class="col-9">
-                <select id="in_speaker" class="form-select">
-                </select>
+        <div class="row vw-100 m-0 ps-1 pe-1" style="height: 50px">
+            <div class="col-8 p-0">
+                <div class="input-group h-100">
+                    <span id="mode_translate_label" class="input-group-text">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-translate" viewBox="0 0 16 16">
+                            <path d="M4.545 6.714 4.11 8H3l1.862-5h1.284L8 8H6.833l-.435-1.286H4.545zm1.634-.736L5.5 3.956h-.049l-.679 2.022H6.18z"/>
+                            <path d="M0 2a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v3h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-3H2a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2zm7.138 9.995c.193.301.402.583.63.846-.748.575-1.673 1.001-2.768 1.292.178.217.451.635.555.867 1.125-.359 2.08-.844 2.886-1.494.777.665 1.739 1.165 2.93 1.472.133-.254.414-.673.629-.89-1.125-.253-2.057-.694-2.82-1.284.681-.747 1.222-1.651 1.621-2.757H14V8h-3v1.047h.765c-.318.844-.74 1.546-1.272 2.13a6.066 6.066 0 0 1-.415-.492 1.988 1.988 0 0 1-.94.31z"/>
+                        </svg>
+                    </span>
+                    <select id="mode_translate" class="form-select h-100" aria-describedby="mode_translate_label">
+                        <option value="ja">Japanese -> No Translate</option>
+                        <option value="en">English -> No Translate</option>
+                        <option value="en2ja">English -> Japanese</option>
+                        <option value="ja2en">Japanese -> English</option>
+                    </select>
+                </div>
             </div>
-            <div class="col-3">
-                <select id="in_duration" class="form-select">
-                    <option value="1">1 s</option>
-                    <option value="2">2 s</option>
-                    <option value="3">3 s</option>
-                    <option value="5">5 s</option>
-                    <option value="10">10 s</option>
-                </select>
-            </div>
-        </div>
-        <div class="row vw-100 m-0" style="height: calc(50% - 40px - 50px)">
-            <div class="col">
-                <textarea id="in_text" class="form-control h-100"></textarea>
-            </div>
-        </div>
-        <div class="row vw-100 m-0" style="height: 38px">
-            <div class="col">
-                <select id="mode_translate" class="form-select">
-                    <option value="e2j">English -> Japanese</option>
-                    <option value="j2e">Japanese -> English</option>
-                </select>
-            </div>
-        </div>
-        <div class="row vw-100 m-0" style="height: calc(50% - 40px)">
-            <div class="col">
-                <textarea id="out_text" class="form-control h-100"></textarea>
-            </div>
-        </div>
-        <div class="row vw-100 m-0" style="height: 50px">
-            <div class="col text-center">
-                <button id="stop_bot" type="button" class="btn btn-success btn-lg">
+            <div class="col-2 text-center p-0">
+                <button id="stop_bot" type="button" class="btn btn-success btn-lg w-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-pause-circle" viewBox="0 0 16 16">
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                         <path d="M5 6.25a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5zm3.5 0a1.25 1.25 0 1 1 2.5 0v3.5a1.25 1.25 0 1 1-2.5 0v-3.5z"/>
                     </svg>
                 </button>
-                <button id="start_bot" type="button" class="btn btn-danger btn-lg">
+                <button id="start_bot" type="button" class="btn btn-danger btn-lg w-100">
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-record-circle" viewBox="0 0 16 16">
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                         <path d="M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
                     </svg>
                 </button>
+            </div>
+            <div class="col-2 p-0">
+                <div class="dropdown">
+                    <button type="button" class="btn btn-primary dropdown-toggle btn-lg w-100" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                            <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                            <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                        </svg>
+                    </button>
+                    <ul class="dropdown-menu p-0" style="width: calc(100vw - 30px)!important">
+                        <li class="input-group">
+                            <span id="cap_speaker_label" class="input-group-text">Cap Speaker</span>
+                            <select id="cap_speaker" class="form-select" aria-describedby="cap_speaker_label"></select>
+                        </li>
+                        <!--li class="input-group">
+                            <span id="in_microphone_label" class="input-group-text">In Microphone</span>
+                            <select id="in_microphone" class="form-select" aria-describedby="in_microphone_label"></select>
+                        </li-->
+                        <!--li><hr class="dropdown-divider"></li-->
+                        <li class="input-group">
+                            <span id="in_duration_label" class="input-group-text">Cap Time</span>
+                            <select id="in_duration" class="form-select" aria-describedby="in_duration_label">
+                                <option value="1">1 s</option>
+                                <option value="2">2 s</option>
+                                <option value="3">3 s</option>
+                                <option value="5">5 s</option>
+                                <option value="10">10 s</option>
+                            </select>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row vw-100 m-0 ps-1 pe-1" style="height: calc(100% - 55px - 30px)">
+            <div class="col p-0">
+                <textarea id="in_text" class="form-control h-100"></textarea>
+            </div>
+        </div>
+        <div class="row vw-100 m-0 ps-1 pe-1 progress" style="height: 30px">
+            <div id="status" class="progress-bar bg-info overflow-visible text-nowrap fs-6" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="1"></div>
+        </div>
+    </div>
+    <div id="loading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background:rgba(0, 0, 0, .5);z-index:10000;">
+        <div class="text-center position-absolute top-50 start-50 w-100 translate-middle">
+            <div class="spinner-border text-light" role="status">
+                <span class="sr-only"></span>
             </div>
         </div>
     </div>
@@ -71,15 +100,28 @@
 async function load_speaker_list(){
 	spakers = await eel.load_speaker_list()();
 	spname = await eel.get_default_speacker()();
-	console.log(spname)
 	$.each(spakers, function(i, sp){
 		selected = (spname == sp['name']) ? " selected" : "";
-		$('#in_speaker').append('<option '+selected+'>'+sp['name']+'</option>');
+		$('#cap_speaker').append('<option '+selected+'>'+sp['name']+'</option>');
 	});
 }
 async function set_default_speacker(spname){
 	await eel.set_default_speacker(spname)();
 }
+/*
+async function load_microphone_list(){
+	microphones = await eel.load_microphone_list()();
+	micname = await eel.get_default_microphone()();
+	console.log(micname)
+	$.each(microphones, function(i, mic){
+		selected = (micname == mic['name']) ? " selected" : "";
+		$('#in_microphone').append('<option '+selected+'>'+mic['name']+'</option>');
+	});
+}
+async function set_default_microphone(micname){
+	await eel.set_default_microphone(micname)();
+}
+*/
 async function load_duration(){
 	duration = await eel.load_duration()();
 	$('#in_duration').val(duration);
@@ -87,41 +129,66 @@ async function load_duration(){
 async function set_duration(duration){
 	await eel.set_duration(duration)();
 }
-async function start(spname, duration){
-	await eel.start(spname, duration)();
+async function start(spname, mode_translate, duration){
+	await eel.start(spname, mode_translate, duration)();
 }
 async function stop(){
 	await eel.stop()();
 }
+async function loaded_model(){
+	$('#loading').removeClass('d-none');
+	await eel.loaded_model()();
+	$('#loading').addClass('d-none');
+}
 function write_intext(text){
-	org_text = $('#in_text').val();
-	org_text += text;
+	text = $('#in_text').val()+text;
 	$('#in_text').val(text);
 }
+function write_status(text, start, end, now){
+	$('#status').text(text);
+	$('#status').attr('aria-valuemin', start);
+	$('#status').attr('aria-valuemax', end);
+	$('#status').attr('aria-valuenow', now);
+	width = parseInt(end)==0 ? 0 : Math.trunc(parseInt(now) / parseInt(end) * 100)
+	//$('#status').css('width', width+"%");
+	$('#status').css('width', 100+"%");
+	console.log(text, start, end, now, width)
+}
+
 $(function(){
 	$('#stop_bot').hide().click(function(){
 		$('#stop_bot').hide();
 		$('#start_bot').show();
+		$('#cap_speaker').removeAttr('readonly');
+		$('#in_duration').removeAttr('readonly');
 	});
 	$('#start_bot').click(function(){
 		$('#stop_bot').show();
 		$('#start_bot').hide();
+		$('#cap_speaker').attr('readonly','readonly');
+		$('#in_duration').attr('readonly','readonly');
 	});
-	$('#in_speaker').change(function(){
+	$('#cap_speaker').change(function(){
 		set_default_speacker($(this).val());
 	})
+	//$('#in_microphone').change(function(){
+	//	set_default_microphone($(this).val());
+	//})
 	$('#in_duration').change(function(){
 		set_duration($(this).val());
 	})
 	$('#start_bot').click(function(){
-		start($('#in_speaker').val(), $('#in_duration').val());
+		start($('#cap_speaker').val(), $('#mode_translate').val(), $('#in_duration').val());
 	})
 	$('#stop_bot').click(function(){
 		stop();
 	})
 	load_speaker_list();
+	//load_microphone_list();
 	load_duration();
+	loaded_model();
 	eel.expose(write_intext);
+	eel.expose(write_status);
 });
 //-->
 </script>

@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 
 
-def load_speacker(app_data_dir:Path):
+def load_setting(app_data_dir:Path):
     conf_dir = common.mkdirs(app_data_dir / 'config')
     file = conf_dir / 'setting.json'
     speacker_json = {}
@@ -15,7 +15,7 @@ def load_speacker(app_data_dir:Path):
 
     return speacker_json
 
-def save_speacker(app_data_dir:Path, settings:dict):
+def save_setting(app_data_dir:Path, settings:dict):
     conf_dir = common.mkdirs(app_data_dir / 'config')
     file = conf_dir / 'setting.json'
     try:
