@@ -18,6 +18,7 @@ python -m venv .venv
 .venv\Scripts\activate
 python.exe -m pip install --upgrade pip setuptools wheel
 python setup.py bdist_wheel
+deactivate
 ```
 - setup.pyのビルドで以下のエラーが発生する場合は、setup.pyを修正してあげる必要があります。
 - エラー：```UnicodeDecodeError: 'cp932' codec can't decode byte 0x97 in position 3341: illegal multibyte sequence```
@@ -34,13 +35,63 @@ python -m venv .venv
 python.exe -m pip install --upgrade pip
 pip install -r requirements.txt
 pip install SoundCard-0.4.2-py3-none-any.whl
+deactivate
 ```
+
+### pyinstallerのブートローダービルド環境構築
+ブートローダーをビルドしないと、peepdetがマルウエア判定されてしまう。
+vc++のコンパイラを使うため、下記のツールをインストールする。
+⇒管理者権限を持ったPowerShellで実行する必要がある
+
+#### Chocolateryインストール
+```
+AdminPowerShell > Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+```
+#### vcbuildtoolsインストール
+```
+AdminPowerShell > choco install -y python vcbuildtools
+```
+
+#### pyinstallerのブートローダービルド＆インストール
+voice-translatorのビルドフォルダで新しいcmdを開いて実行する
+```
+cd voice-translator
+.venv\Scripts\activate
+git clone https://github.com/pyinstaller/pyinstaller
+cd pyinstaller\bootloader
+python ./waf all
+cd ..
+pip install wheel
+pip install .
+deactivate
+```
+
+#### voice-translatorのビルド
+```
+cd voice-translator
+.venv\Scripts\activate
+pyinstaller voicetranslator/__main__.py -n voicetranslator --onefile --collect-all voicetranslator -i voicetranslator/v2t.ico -w --clean
+
+mkdir dist\voicetranslator
+copy README.md dist\voicetranslator\
+copy voicetranslator\config.yaml dist\voicetranslator\
+copy voicetranslator\logconf.yml dist\voicetranslator\
+copy voicetranslator\v2t.ico dist\voicetranslator\
+deactivate
+```
+
 
 #### 開発環境でのvoice-translatorの実行方法
 ```
 cd voice-translator
 .venv\Scripts\activate
 python -m voicetranslator
+deactivate
+```
+
+#### 実行時データの保存場所
+```
+pathlib.Path(HOME_DIR) / '.voice-translator'
 ```
 
 

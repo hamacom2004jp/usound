@@ -1,11 +1,9 @@
 eel
 faster-whisper
-numpy
 pyyaml
 transformers
 sacremoses
 sentencepiece
-#sounddevice
 #soundcard
 soundfile
 torch

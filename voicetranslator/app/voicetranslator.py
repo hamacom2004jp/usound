@@ -42,7 +42,7 @@ def set_default_speacker(spname):
 
 @eel.expose
 def load_duration():
-    duration = 3
+    duration = 10
     setting_data = setting.load_setting(common.APP_DATA_DIR)
     if 'duration' in setting_data:
         duration = setting_data['duration']
@@ -68,7 +68,6 @@ def start(spname, mode_translate, duration):
         Path(f).unlink(missing_ok=True)
     RUN_CAPS.put(True)
     pr_cap = multiprocessing.Process(target=run_cap, args=(common.APP_DATA_DIR, spname, mode_translate, int(duration), RUN_MAIN, RUN_CAPS, RUN_SEGMENT))
-    eel.loading_mask(False)
     pr_cap.start()
 
 @eel.expose
@@ -76,7 +75,23 @@ def stop():
     logger_main, _, _, _ = common.load_config()
     common.status(f"Speacker recoding stop.", logger=logger_main)
     try:
-        RUN_CAPS.get(block=False)
+        while True:
+            logger_main.debug(str(RUN_CAPS.get(False)))
+    except:
+        pass
+    try:
+        while True:
+            logger_main.debug(str(RUN_MAIN.get(False)))
+    except:
+        pass
+    try:
+        while True:
+            logger_main.debug(str(RUN_SEGMENT.get(False)))
+    except:
+        pass
+    try:
+        while True:
+            logger_main.debug(str(RUN_TRANSFORM.get(False)))
     except:
         pass
 
@@ -89,6 +104,7 @@ def shutdown(page, sockets):
 
 def run_main(run_main):
     eel.loading_mask(True)
+    common.status(f"Initialization in progress..")
     while True:
         try:
             eval_str = run_main.get(timeout=1)
@@ -99,6 +115,7 @@ def run_main(run_main):
             pass
         
 def run_cap(app_data_dir, spname, mode_translate, duration, run_main, run_caps, run_segment):
+    run_main.put(f'eel.loading_mask(True)')
     common.APP_DATA_DIR = app_data_dir
     _, logger_cap, _, _ = common.load_config()
     common.status(f"Start run_cap(spname={spname}, mode_translate={mode_translate}, duration={duration})", run_main=run_main, logger=logger_cap)
@@ -107,9 +124,10 @@ def run_cap(app_data_dir, spname, mode_translate, duration, run_main, run_caps, 
 
     common.status(f"Opening Capture. spname={spname}", run_main=run_main, logger=logger_cap)
     with sc.get_microphone(id=spname, include_loopback=True).recorder(samplerate=samplerate) as mic:
+        run_main.put(f'eel.loading_mask(False)')
         while run_caps.qsize() > 0:
             try:
-                common.status(f"Capturing. now={run_segment.qsize()}", run_main=run_main, logger=logger_cap)
+                common.status(f"Capturing. segment_size={run_segment.qsize()}", run_main=run_main, logger=logger_cap)
                 rec = mic.record(numframes=samplerate * duration)
                 wav_file = temp_dir / Path(datetime.datetime.now().strftime("%y%m%d%H%M%S")+'.wav')
                 sf.write(wav_file, rec, samplerate)
@@ -130,7 +148,7 @@ def run_segments(app_data_dir, run_main, run_segment, run_transform):
     common.status(f"Start run_segments.", run_main=run_main, logger=logger_seg)
     while True:
         try:
-            common.status(f"Ready Sengments.", run_main=run_main, logger=logger_seg)
+            #common.status(f"Ready Sengments.", run_main=run_main, logger=logger_seg)
             mode_translate, wav_file = run_segment.get(timeout=10)
             if mode_translate is None:
                 break
@@ -149,7 +167,8 @@ def run_segments(app_data_dir, run_main, run_segment, run_transform):
                     speech_pad_ms=400))
             wav_file.unlink(missing_ok=True)
             text = ''.join([segment.text for segment in segments])
-            run_transform.put((mode_translate, text))
+            run_main.put(f'eel.write_intext("{text}")')
+            #run_transform.put((mode_translate, text))
         except queue.Empty:
             pass
         except KeyboardInterrupt as e:
