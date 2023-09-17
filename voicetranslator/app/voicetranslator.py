@@ -1,14 +1,14 @@
+from pathlib import Path
 from voicetranslator.app import common
 from voicetranslator.app import setting
+import datetime
+import glob
 import eel
-import io
+import multiprocessing
 import queue
-import numpy as np
-#import sounddevice as sd
 import soundcard as sc
 import soundfile as sf
 import time
-import threading
 import sys
 
 
@@ -35,42 +35,10 @@ def get_default_speacker():
 
 @eel.expose
 def set_default_speacker(spname):
-    common.logger.info(f"Set default speacker.vlue={spname}")
     sp = load_speaker_list(spname)
     setting_data = setting.load_setting(common.APP_DATA_DIR)
     setting_data['default_sp'] = sp.name
     setting.save_setting(common.APP_DATA_DIR, setting_data)
-
-"""
-@eel.expose
-def load_microphone_list(micname=None):
-    microphones = list()
-    for mic in sc.all_microphones():
-        try:
-            if micname is not None and micname==mic.name:
-                return mic
-            microphones.append(dict(index=mic.id,
-                                 name=mic.name,
-                                 channels=mic.channels))
-        except:
-            break
-    return microphones
-
-@eel.expose
-def get_default_microphone():
-    setting_data = setting.load_setting(common.APP_DATA_DIR)
-    if 'default_mic' not in setting_data:
-        setting_data['default_mic'] = ''
-    return setting_data['default_mic']
-
-@eel.expose
-def set_default_microphone(micname):
-    common.logger.info(f"Set default microphone.vlue={micname}")
-    mic = load_microphone_list(micname)
-    setting_data = setting.load_setting(common.APP_DATA_DIR)
-    setting_data['default_mic'] = mic.name
-    setting.save_setting(common.APP_DATA_DIR, setting_data)
-"""
 
 @eel.expose
 def load_duration():
@@ -82,142 +50,149 @@ def load_duration():
 
 @eel.expose
 def set_duration(duration):
-    common.logger.info(f"Set duration.vlue={duration}")
     setting_data = setting.load_setting(common.APP_DATA_DIR)
     setting_data['duration'] = duration
     setting.save_setting(common.APP_DATA_DIR, setting_data)
 
-V2T_MODEL = None
-EN2JA_MODEL = None
-JA2EN_MODEL = None
-
-RUN_CAPS = queue.Queue()
-RUN_SEGMENT = queue.Queue()
-RUN_TRANSFORM = queue.Queue()
+RUN_MAIN = multiprocessing.Queue()
+RUN_CAPS = multiprocessing.Queue()
+RUN_SEGMENT = multiprocessing.Queue()
+RUN_TRANSFORM = multiprocessing.Queue()
 @eel.expose
 def start(spname, mode_translate, duration):
-    global V2T_MODEL, EN2JA_MODEL, JA2EN_MODEL
-    common.status(f"Loading models..")
-    if V2T_MODEL is None:
-        V2T_MODEL, EN2JA_MODEL, JA2EN_MODEL = common.load_model()
-    common.logger.info(f"Speacker recoding start.spname={spname}, mode_translate={mode_translate}, duration={duration}")
-    common.status(f"Starting capture..")
+    eel.loading_mask(True)
+    logger_main, _, _, _ = common.load_config()
+    common.status(f"Starting capture..", logger=logger_main)
+    temp_dir = common.mkdirs(common.APP_DATA_DIR / 'temp')
+    for f in glob.glob(str(temp_dir)+"/*.wav"):
+        Path(f).unlink(missing_ok=True)
     RUN_CAPS.put(True)
-    th_cap = threading.Thread(target=run_cap, args=(spname, mode_translate, int(duration), RUN_CAPS, RUN_SEGMENT))
-    th_cap.start()
-    th_seg = threading.Thread(target=run_segments, args=(RUN_CAPS, mode_translate, RUN_SEGMENT, RUN_TRANSFORM))
-    th_seg.start()
-    th_seg = threading.Thread(target=run_translate, args=(RUN_CAPS, mode_translate, RUN_TRANSFORM))
-    th_seg.start()
+    pr_cap = multiprocessing.Process(target=run_cap, args=(common.APP_DATA_DIR, spname, mode_translate, int(duration), RUN_MAIN, RUN_CAPS, RUN_SEGMENT))
+    eel.loading_mask(False)
+    pr_cap.start()
 
 @eel.expose
 def stop():
-    common.logger.info(f"Speacker recoding stop.")
+    logger_main, _, _, _ = common.load_config()
+    common.status(f"Speacker recoding stop.", logger=logger_main)
     try:
         RUN_CAPS.get(block=False)
     except:
         pass
 
-@eel.expose
-def loaded_model():
-    global V2T_MODEL, EN2JA_MODEL, JA2EN_MODEL
-    common.status(f"Loading models..")
-    if V2T_MODEL is None:
-        V2T_MODEL, EN2JA_MODEL, JA2EN_MODEL = common.load_model()
-    common.status(f"Ready.")
-    return True
-
 def shutdown(page, sockets):
     stop()
+    RUN_MAIN.put(None)
+    RUN_SEGMENT.put((None, None))
+    RUN_TRANSFORM.put((None, None))
     sys.exit()
 
-def run_cap(spname, mode_translate, duration, run_caps, run_segment):
-    common.logger.info(f"Start run_cap(spname={spname}, mode_translate={mode_translate}, duration={duration})")
-    common.status(f"Loading setting..")
-    setting_data = setting.load_setting(common.APP_DATA_DIR)
-    wav_file = common.mkdirs(common.APP_DATA_DIR / 'temp') / 'rec.wav'
-    #wav_file = io.BytesIO()
+def run_main(run_main):
+    eel.loading_mask(True)
+    while True:
+        try:
+            eval_str = run_main.get(timeout=1)
+            if eval_str is None:
+                break
+            eval(eval_str)
+        except queue.Empty:
+            pass
+        
+def run_cap(app_data_dir, spname, mode_translate, duration, run_main, run_caps, run_segment):
+    common.APP_DATA_DIR = app_data_dir
+    _, logger_cap, _, _ = common.load_config()
+    common.status(f"Start run_cap(spname={spname}, mode_translate={mode_translate}, duration={duration})", run_main=run_main, logger=logger_cap)
+    temp_dir = common.mkdirs(app_data_dir / 'temp')
     samplerate = 48000
 
-    v2t_mode = mode_translate[:2]
-    t2t_mode = mode_translate[-2:]
-
-    while run_caps.qsize() > 0:
-        with sc.get_microphone(id=spname, include_loopback=True).recorder(samplerate=samplerate) as mic:
-            common.status(f"Recording.", now=run_segment.qsize())
-            rec = mic.record(numframes=samplerate * duration)
-            common.status(f"Writing.", now=run_segment.qsize())
-            sf.write(wav_file, rec, samplerate)
+    common.status(f"Opening Capture. spname={spname}", run_main=run_main, logger=logger_cap)
+    with sc.get_microphone(id=spname, include_loopback=True).recorder(samplerate=samplerate) as mic:
+        while run_caps.qsize() > 0:
             try:
-                common.status(f"Transcribing.", now=run_segment.qsize())
-                segments, info = V2T_MODEL.transcribe(
-                    str(wav_file),
-                    language=v2t_mode,
-                    vad_filter=True,
-                    vad_parameters=dict(
-                        threshold=0.5,
-                        min_speech_duration_ms=250,
-                        max_speech_duration_s=float("inf"),
-                        min_silence_duration_ms=2000,
-                        window_size_samples=1024,
-                        speech_pad_ms=400))
-
-                #common.logger.debug(f"language={info.language}, language_probability={info.language_probability}, duration={info.duration}, all_language_probs={info.all_language_probs}, transcription_options={info.transcription_options}, vad_options={info.vad_options}")
-
-                run_segment.put(segments)
-
+                common.status(f"Capturing. now={run_segment.qsize()}", run_main=run_main, logger=logger_cap)
+                rec = mic.record(numframes=samplerate * duration)
+                wav_file = temp_dir / Path(datetime.datetime.now().strftime("%y%m%d%H%M%S")+'.wav')
+                sf.write(wav_file, rec, samplerate)
+                run_segment.put((mode_translate, wav_file))
             except KeyboardInterrupt as e:
-                common.e_msg(e, common.logger)
+                common.e_msg(e, logger_cap)
                 stop()
-                sys.exit()
+                break
             except Exception as e:
-                common.e_msg(e, common.logger)
+                common.e_msg(e, logger_cap)
                 time.sleep(1)
-    common.status(f"Ready.")
+    common.status(f"Ready.", run_main=run_main, logger=logger_cap)
 
-def run_segments(run_caps, mode_translate, run_segment, run_transform):
-    common.logger.info(f"Start run_segments(mode_translate={mode_translate})")
-    while run_caps.qsize() > 0:
+def run_segments(app_data_dir, run_main, run_segment, run_transform):
+    common.APP_DATA_DIR = app_data_dir
+    _, _, logger_seg, _ = common.load_config()
+    v2t_model = common.load_v2t_model(run_main, logger_seg)
+    common.status(f"Start run_segments.", run_main=run_main, logger=logger_seg)
+    while True:
         try:
-            segments = run_segment.get()
-            common.status(f"Text output.", now=run_segment.qsize()+1)
-            for segment in segments:
-                common.logger.debug(f"run_segments: {segment.text}")
-                if mode_translate=='ja' or mode_translate=='en':
-                    eel.write_intext(segment.text)
-                else:
-                    run_transform.put(segment.text)
+            common.status(f"Ready Sengments.", run_main=run_main, logger=logger_seg)
+            mode_translate, wav_file = run_segment.get(timeout=10)
+            if mode_translate is None:
+                break
+            v2t_mode = mode_translate[:2]
+            common.status(f"Transcribing. segment={run_segment.qsize()+1}, v2t_mode={v2t_mode}, wav_file={wav_file.name}", run_main=run_main, logger=logger_seg)
+            segments, info = v2t_model.transcribe(
+                str(wav_file),
+                language=v2t_mode,
+                vad_filter=True,
+                vad_parameters=dict(
+                    threshold=0.5,
+                    min_speech_duration_ms=250,
+                    max_speech_duration_s=float("inf"),
+                    min_silence_duration_ms=2000,
+                    window_size_samples=1024,
+                    speech_pad_ms=400))
+            wav_file.unlink(missing_ok=True)
+            text = ''.join([segment.text for segment in segments])
+            run_transform.put((mode_translate, text))
+        except queue.Empty:
+            pass
         except KeyboardInterrupt as e:
-            common.e_msg(e, common.logger)
+            common.e_msg(e, logger_seg)
             stop()
-            sys.exit()
+            break
         except Exception as e:
-            common.e_msg(e, common.logger)
+            common.e_msg(e, logger_seg)
             time.sleep(1)
 
-def run_translate(run_caps, mode_translate, run_transform):
-    common.logger.info(f"Start run_translate(mode_translate={mode_translate})")
-    while run_caps.qsize() > 0:
+def run_translate(app_data_dir, run_main, run_transform):
+    common.APP_DATA_DIR = app_data_dir
+    _, _, _, logger_trs = common.load_config()
+    en2ja_model = common.load_en2ja_model(run_main, logger_trs)
+    ja2en_model = common.load_ja2en_model(run_main, logger_trs)
+    common.status(f"Start run_translate.", run_main=run_main, logger=logger_trs)
+    while True:
         try:
-            input_text = run_transform.get()
-            common.status(f"Text output.", now=run_transform.qsize()+1)
+            common.status(f"Ready translate.", run_main=run_main, logger=logger_trs)
+            mode_translate, input_text = run_transform.get(timeout=10)
+            if mode_translate is None:
+                break
+            common.status(f"Text input. transform={run_transform.qsize()+1}", run_main=run_main, logger=logger_trs)
             results = None
             if mode_translate=='en2ja':
-                results = EN2JA_MODEL(input_text)
+                results = en2ja_model(input_text)
             elif mode_translate=='ja2en':
-                results = JA2EN_MODEL(input_text)
+                results = ja2en_model(input_text)
             else:
-                time.sleep(0.1)
+                run_main.put(f'eel.write_intext("{input_text}")')
             if results is not None:
                 for r in results:
-                    common.logger.debug(f"{r['translation_text']}")
-                    eel.write_intext(r['translation_text'])
+                    txt = r['translation_text']
+                    common.status(f"{txt}", run_main=run_main, logger=logger_trs)
+                    run_main.put(f'eel.write_intext("{txt}")')
+        except queue.Empty:
+            pass
         except KeyboardInterrupt as e:
-            common.e_msg(e, common.logger)
+            common.e_msg(e, logger_trs)
             stop()
-            sys.exit()
+            break
         except Exception as e:
-            common.e_msg(e, common.logger)
+            common.e_msg(e, logger_trs)
             time.sleep(1)
 
 

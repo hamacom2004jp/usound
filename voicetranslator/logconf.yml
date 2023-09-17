@@ -6,26 +6,62 @@ formatters:
         format: '[%(asctime)s] [%(levelname)s] %(message)s'
         class: logging.Formatter
 handlers:
-    h1:
+    vt_std:
         class: logging.StreamHandler
         level: DEBUG
         formatter: fmt
         stream: ext://sys.stdout
-    h2:
+    vt_main:
         class: logging.handlers.TimedRotatingFileHandler
         level: DEBUG
         formatter: fmt
         backupCount: 5
         when : 'D'
         encoding : 'utf-8'
-        filename: app.log
+        filename: app-vt_main.log
+    vt_cap:
+        class: logging.handlers.TimedRotatingFileHandler
+        level: DEBUG
+        formatter: fmt
+        backupCount: 5
+        when : 'D'
+        encoding : 'utf-8'
+        filename: app-vt_cap.log
+    vt_seg:
+        class: logging.handlers.TimedRotatingFileHandler
+        level: DEBUG
+        formatter: fmt
+        backupCount: 5
+        when : 'D'
+        encoding : 'utf-8'
+        filename: app-vt_seg.log
+    vt_trs:
+        class: logging.handlers.TimedRotatingFileHandler
+        level: DEBUG
+        formatter: fmt
+        backupCount: 5
+        when : 'D'
+        encoding : 'utf-8'
+        filename: app-vt_trs.log
 
 loggers:
-    peepdet:
-        handlers: [h2]
+    vt_main:
+        handlers: [vt_std, vt_main]
         level: DEBUG
-        qualname: peepdet
+        qualname: vt_main
+    vt_cap:
+        handlers: [vt_std, vt_cap]
+        level: DEBUG
+        qualname: vt_cap
+    vt_seg:
+        handlers: [vt_std, vt_seg]
+        level: DEBUG
+        qualname: vt_seg
+    vt_trs:
+        handlers: [vt_std, vt_trs]
+        level: DEBUG
+        qualname: vt_trs
  
 root:
-    handlers: [h1]
+    handlers: [vt_std]
     level: DEBUG

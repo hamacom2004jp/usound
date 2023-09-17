@@ -59,11 +59,6 @@
                             <span id="cap_speaker_label" class="input-group-text">Cap Speaker</span>
                             <select id="cap_speaker" class="form-select" aria-describedby="cap_speaker_label"></select>
                         </li>
-                        <!--li class="input-group">
-                            <span id="in_microphone_label" class="input-group-text">In Microphone</span>
-                            <select id="in_microphone" class="form-select" aria-describedby="in_microphone_label"></select>
-                        </li-->
-                        <!--li><hr class="dropdown-divider"></li-->
                         <li class="input-group">
                             <span id="in_duration_label" class="input-group-text">Cap Time</span>
                             <select id="in_duration" class="form-select" aria-describedby="in_duration_label">
@@ -108,20 +103,6 @@ async function load_speaker_list(){
 async function set_default_speacker(spname){
 	await eel.set_default_speacker(spname)();
 }
-/*
-async function load_microphone_list(){
-	microphones = await eel.load_microphone_list()();
-	micname = await eel.get_default_microphone()();
-	console.log(micname)
-	$.each(microphones, function(i, mic){
-		selected = (micname == mic['name']) ? " selected" : "";
-		$('#in_microphone').append('<option '+selected+'>'+mic['name']+'</option>');
-	});
-}
-async function set_default_microphone(micname){
-	await eel.set_default_microphone(micname)();
-}
-*/
 async function load_duration(){
 	duration = await eel.load_duration()();
 	$('#in_duration').val(duration);
@@ -135,11 +116,6 @@ async function start(spname, mode_translate, duration){
 async function stop(){
 	await eel.stop()();
 }
-async function loaded_model(){
-	$('#loading').removeClass('d-none');
-	await eel.loaded_model()();
-	$('#loading').addClass('d-none');
-}
 function write_intext(text){
 	text = $('#in_text').val()+text;
 	$('#in_text').val(text);
@@ -150,11 +126,14 @@ function write_status(text, start, end, now){
 	$('#status').attr('aria-valuemax', end);
 	$('#status').attr('aria-valuenow', now);
 	width = parseInt(end)==0 ? 0 : Math.trunc(parseInt(now) / parseInt(end) * 100)
-	//$('#status').css('width', width+"%");
 	$('#status').css('width', 100+"%");
 	console.log(text, start, end, now, width)
 }
-
+function loading_mask(show){
+    console.log(show);
+	if(show) $('#loading').removeClass('d-none');
+	else $('#loading').addClass('d-none');
+}
 $(function(){
 	$('#stop_bot').hide().click(function(){
 		$('#stop_bot').hide();
@@ -171,9 +150,6 @@ $(function(){
 	$('#cap_speaker').change(function(){
 		set_default_speacker($(this).val());
 	})
-	//$('#in_microphone').change(function(){
-	//	set_default_microphone($(this).val());
-	//})
 	$('#in_duration').change(function(){
 		set_duration($(this).val());
 	})
@@ -184,11 +160,10 @@ $(function(){
 		stop();
 	})
 	load_speaker_list();
-	//load_microphone_list();
 	load_duration();
-	loaded_model();
 	eel.expose(write_intext);
 	eel.expose(write_status);
+	eel.expose(loading_mask);
 });
 //-->
 </script>
