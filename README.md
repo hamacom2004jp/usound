@@ -70,13 +70,84 @@ deactivate
 ```
 cd voice-translator
 .venv\Scripts\activate
-pyinstaller voicetranslator/__main__.py -n voicetranslator --onefile --collect-all voicetranslator -i voicetranslator/v2t.ico -w --clean
+powershell wget https://raw.githubusercontent.com/bottlepy/bottle/master/bottle.py -OutFile .venv\Lib\site-packages\bottle.py
+python -m eel voicetranslator/__main__.py voicetranslator/app/web -n voicetranslator --onefile -i voicetranslator/v2t.ico -w --clean ^
+            --collect-all voicetranslator ^
+            --collect-all voicetranslator.app ^
+            --collect-all altgraph ^
+            --collect-all av ^
+            --collect-all bottle ^
+            --collect-all bottle-websocket ^
+            --collect-all certifi ^
+            --collect-all cffi ^
+            --collect-all charset-normalizer ^
+            --collect-all click ^
+            --collect-all colorama ^
+            --collect-all coloredlogs ^
+            --collect-all ctranslate2 ^
+            --collect-all Eel ^
+            --collect-all faster-whisper ^
+            --collect-all filelock ^
+            --collect-all flatbuffers ^
+            --collect-all fsspec ^
+            --collect-all future ^
+            --collect-all gevent ^
+            --collect-all gevent-websocket ^
+            --collect-all greenlet ^
+            --collect-all huggingface-hub ^
+            --collect-all humanfriendly ^
+            --collect-all idna ^
+            --collect-all Jinja2 ^
+            --collect-all joblib ^
+            --collect-all MarkupSafe ^
+            --collect-all mpmath ^
+            --collect-all networkx ^
+            --collect-all numpy ^
+            --collect-all onnxruntime ^
+            --collect-all packaging ^
+            --collect-all pefile ^
+            --collect-all Pillow ^
+            --collect-all pip ^
+            --collect-all protobuf ^
+            --collect-all pycparser ^
+            --collect-all pyinstaller ^
+            --collect-all pyinstaller-hooks-contrib ^
+            --collect-all pyparsing ^
+            --collect-all pyreadline3 ^
+            --collect-all pywin32-ctypes ^
+            --collect-all PyYAML ^
+            --collect-all regex ^
+            --collect-all requests ^
+            --collect-all sacremoses ^
+            --collect-all safetensors ^
+            --collect-all sentencepiece ^
+            --collect-all setuptools ^
+            --collect-all six ^
+            --collect-all SoundCard ^
+            --collect-all soundfile ^
+            --collect-all sympy ^
+            --collect-all tokenizers ^
+            --collect-all torch ^
+            --collect-all torchaudio ^
+            --collect-all torchvision ^
+            --collect-all tqdm ^
+            --collect-all transformers ^
+            --collect-all typing_extensions ^
+            --collect-all urllib3 ^
+            --collect-all whichcraft ^
+            --collect-all zope.event ^
+            --collect-all zope.interface
 
+set VERSION=0.0.1
+mkdir dist\licenses
 mkdir dist\voicetranslator
-copy README.md dist\voicetranslator\
+copy README.md dist\
+copy LICENSE.txt dist\
+copy licenses\* dist\licenses\
 copy voicetranslator\config.yaml dist\voicetranslator\
 copy voicetranslator\logconf.yml dist\voicetranslator\
 copy voicetranslator\v2t.ico dist\voicetranslator\
+powershell compress-archive -Force dist/* voicetranslator-v%VERSION%.zip
 deactivate
 ```
 
