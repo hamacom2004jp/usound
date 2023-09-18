@@ -13,6 +13,7 @@ def main(data_dir:str):
     logger_main, _, _, _ = common.load_config()
     eel.init("voicetranslator/app/web")
     eel.write_intext('')
+    eel.write_outtext('')
     eel.write_status('', 0, 0, 0)
     eel.loading_mask(False)
 
@@ -21,19 +22,17 @@ def main(data_dir:str):
                                args=(voicetranslator.RUN_MAIN,))
     th_main.start()
     logger_main.info(f"Starting run_segments.")
-    pr_seg = multiprocessing.Process(target=voicetranslator.run_segments,
-                                     args=(common.APP_DATA_DIR,
-                                           voicetranslator.RUN_MAIN,
-                                           voicetranslator.RUN_SEGMENT,
-                                           voicetranslator.RUN_TRANSFORM))
-    pr_seg.start()
-    '''
+    voicetranslator.PROC_SEGMENT = multiprocessing.Process(target=voicetranslator.run_segments,
+                                                           args=(common.APP_DATA_DIR,
+                                                                 voicetranslator.RUN_MAIN,
+                                                                 voicetranslator.RUN_SEGMENT))
+    voicetranslator.PROC_SEGMENT.start()
     logger_main.info(f"Starting run_translate.")
-    pr_trs = multiprocessing.Process(target=voicetranslator.run_translate,
-                                     args=(common.APP_DATA_DIR,
-                                           voicetranslator.RUN_MAIN,
-                                           voicetranslator.RUN_TRANSFORM))
-    pr_trs.start()
-    '''
+    voicetranslator.PROC_TRANSFORM = multiprocessing.Process(target=voicetranslator.run_translate,
+                                                             args=(common.APP_DATA_DIR,
+                                                                   voicetranslator.RUN_MAIN,
+                                                                   voicetranslator.RUN_TRANSFORM))
+    voicetranslator.PROC_TRANSFORM.start()
     logger_main.info(f"Starting eel.")
+    #eel.start("/index.html", size=(480, 320), port=8080, close_callback=None)
     eel.start("/index.html", size=(480, 320), port=8080, close_callback=voicetranslator.shutdown)

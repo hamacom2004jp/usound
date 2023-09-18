@@ -58,8 +58,12 @@ RUN_MAIN = multiprocessing.Queue()
 RUN_CAPS = multiprocessing.Queue()
 RUN_SEGMENT = multiprocessing.Queue()
 RUN_TRANSFORM = multiprocessing.Queue()
+PROC_CAPS = None
+PROC_SEGMENT = None
+PROC_TRANSFORM = None
 @eel.expose
 def start(spname, mode_translate, duration):
+    global RUN_MAIN, RUN_CAPS, RUN_SEGMENT, RUN_TRANSFORM, PROC_CAPS
     eel.loading_mask(True)
     logger_main, _, _, _ = common.load_config()
     common.status(f"Starting capture..", logger=logger_main)
@@ -67,11 +71,12 @@ def start(spname, mode_translate, duration):
     for f in glob.glob(str(temp_dir)+"/*.wav"):
         Path(f).unlink(missing_ok=True)
     RUN_CAPS.put(True)
-    pr_cap = multiprocessing.Process(target=run_cap, args=(common.APP_DATA_DIR, spname, mode_translate, int(duration), RUN_MAIN, RUN_CAPS, RUN_SEGMENT))
-    pr_cap.start()
+    PROC_CAPS = multiprocessing.Process(target=run_cap, args=(common.APP_DATA_DIR, spname, mode_translate, int(duration), RUN_MAIN, RUN_CAPS, RUN_SEGMENT))
+    PROC_CAPS.start()
 
 @eel.expose
 def stop():
+    global RUN_MAIN, RUN_CAPS, RUN_SEGMENT, RUN_TRANSFORM
     logger_main, _, _, _ = common.load_config()
     common.status(f"Speacker recoding stop.", logger=logger_main)
     try:
@@ -95,12 +100,28 @@ def stop():
     except:
         pass
 
+@eel.expose
+def translate(mode_translate, text):
+    global RUN_MAIN, RUN_CAPS, RUN_SEGMENT, RUN_TRANSFORM
+    RUN_TRANSFORM.put((mode_translate, text))
+
 def shutdown(page, sockets):
+    global RUN_MAIN, RUN_CAPS, RUN_SEGMENT, RUN_TRANSFORM
+    global PROC_CAPS, PROC_SEGMENT, PROC_TRANSFORM
     stop()
     RUN_MAIN.put(None)
     RUN_SEGMENT.put((None, None))
     RUN_TRANSFORM.put((None, None))
-    sys.exit()
+    if PROC_CAPS is not None:
+        PROC_CAPS.terminate()
+        PROC_CAPS.join()
+    if PROC_SEGMENT is not None:
+        PROC_SEGMENT.terminate()
+        PROC_SEGMENT.join()
+    if PROC_TRANSFORM is not None:
+        PROC_TRANSFORM.terminate()
+        PROC_TRANSFORM.join()
+    sys.exit(0)
 
 def run_main(run_main):
     eel.loading_mask(True)
@@ -141,7 +162,7 @@ def run_cap(app_data_dir, spname, mode_translate, duration, run_main, run_caps, 
                 time.sleep(1)
     common.status(f"Ready.", run_main=run_main, logger=logger_cap)
 
-def run_segments(app_data_dir, run_main, run_segment, run_transform):
+def run_segments(app_data_dir, run_main, run_segment):
     common.APP_DATA_DIR = app_data_dir
     _, _, logger_seg, _ = common.load_config()
     v2t_model = common.load_v2t_model(run_main, logger_seg)
@@ -168,7 +189,6 @@ def run_segments(app_data_dir, run_main, run_segment, run_transform):
             wav_file.unlink(missing_ok=True)
             text = ''.join([segment.text for segment in segments])
             run_main.put(f'eel.write_intext("{text}")')
-            #run_transform.put((mode_translate, text))
         except queue.Empty:
             pass
         except KeyboardInterrupt as e:
@@ -187,23 +207,23 @@ def run_translate(app_data_dir, run_main, run_transform):
     common.status(f"Start run_translate.", run_main=run_main, logger=logger_trs)
     while True:
         try:
-            common.status(f"Ready translate.", run_main=run_main, logger=logger_trs)
+            #common.status(f"Ready translate.", run_main=run_main, logger=logger_trs)
             mode_translate, input_text = run_transform.get(timeout=10)
             if mode_translate is None:
                 break
             common.status(f"Text input. transform={run_transform.qsize()+1}", run_main=run_main, logger=logger_trs)
             results = None
-            if mode_translate=='en2ja':
+            if mode_translate=='en':
                 results = en2ja_model(input_text)
-            elif mode_translate=='ja2en':
+            elif mode_translate=='ja':
                 results = ja2en_model(input_text)
             else:
-                run_main.put(f'eel.write_intext("{input_text}")')
+                run_main.put(f'eel.write_outtext("{input_text}")')
             if results is not None:
                 for r in results:
                     txt = r['translation_text']
                     common.status(f"{txt}", run_main=run_main, logger=logger_trs)
-                    run_main.put(f'eel.write_intext("{txt}")')
+                    run_main.put(f'eel.write_outtext("{txt}")')
         except queue.Empty:
             pass
         except KeyboardInterrupt as e:
