@@ -5,13 +5,44 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: voicetranslator",
+            "name": "Python: usound version",
             "type": "python",
             "request": "launch",
-            "module": "voicetranslator",
+            "args": ["-v"],
+            "module": "usound",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",            
-            "justMyCode": true
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false
+        },
+        {
+            "name": "Python: usound recode",
+            "type": "python",
+            "request": "launch",
+            "args": ["-m","speaker","-c","record", "--output_dir", "output"],
+            "module": "usound",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false
+        },
+        {
+            "name": "Python: usound server",
+            "type": "python",
+            "request": "launch",
+            "args": ["-m","server","-c","start","--debug"],
+            "module": "usound",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false
+        },
+        {
+            "name": "Python: usound gui",
+            "type": "python",
+            "request": "launch",
+            "args": ["-m","gui","-c","start","--signin_file",".samples/user_list.yml"],
+            "module": "usound",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "justMyCode": false
         }
     ]
 }
