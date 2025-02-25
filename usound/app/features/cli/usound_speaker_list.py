@@ -1,11 +1,10 @@
 from cmdbox.app import common, feature
 from typing import Dict, Any, Tuple, Union, List
 import argparse
-import datetime
 import logging
-import soundcard
 
-class SpeakerList(feature.Feature):
+
+class SpeakerList(feature.OneshotResultEdgeFeature):
     def get_mode(self) -> Union[str, List[str]]:
         """
         この機能のモードを返します
@@ -73,6 +72,7 @@ class SpeakerList(feature.Feature):
             Tuple[int, Dict[str, Any], Any]: 終了コード, 結果, オブジェクト
         """
         try:
+            import soundcard
             speakers = list()
             for s in soundcard.all_speakers():
                 sp = dict(id=s.id, name=s.name, channels=s.channels)

@@ -1,4 +1,4 @@
-from cmdbox.app import common, feature
+from cmdbox.app import common, edge, feature
 from cmdbox.app.commons import convert
 from pathlib import Path
 from typing import Dict, Any, Tuple, Union, List
@@ -6,7 +6,6 @@ import argparse
 import datetime
 import logging
 import io
-import soundcard
 import soundfile
 import time
 import threading
@@ -83,6 +82,7 @@ class SpeakerCapture(feature.Feature):
         Returns:
             Tuple[int, Dict[str, Any], Any]: 終了コード, 結果, オブジェクト
         """
+        import soundcard
         output_dir = None
         output_format = args.output_format
         spname = None
@@ -139,3 +139,53 @@ class SpeakerCapture(feature.Feature):
             logger.error(f'{e}', exc_info=True)
         common.print_format("", False, tm, None, False, pf=pf)
         return 0, "", None
+
+    def edgerun(self, opt:Dict[str, Any], tool:edge.Tool, logger:logging.Logger, timeout:int, prevres:Any=None):
+        """
+        この機能のエッジ側の実行を行います
+
+        Args:
+            opt (Dict[str, Any]): オプション
+            tool (edge.Tool): 通知関数などedge側のUI操作を行うためのクラス
+            logger (logging.Logger): ロガー
+            timeout (int): タイムアウト時間
+            prevres (Any): 前コマンドの結果。pipeline実行の実行結果を参照する時に使用します。
+
+        Yields:
+            Tuple[int, Dict[str, Any], Any]: 終了コード, 結果
+        """
+        import soundcard
+        spname = None
+        if not opt['spid'] and not opt['spname']:
+            sl = soundcard.all_speakers()
+            if len(sl) == 0:
+                raise ValueError("No speakers.")
+            spname = sl[0].name
+        elif opt['spid']:
+            for s in soundcard.all_speakers():
+                if s.id == opt['spid']:
+                    spname = s.name
+                    break
+        elif opt['spname']:
+            for s in soundcard.all_speakers():
+                if s.name == opt['spname']:
+                    spname = s.name
+                    break
+        try:
+            rectime = 0
+            with soundcard.get_microphone(id=spname, include_loopback=True).recorder(samplerate=opt['samplerate']) as mic:
+                while rectime < opt['rectime']:
+                    st = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                    rec = mic.record(numframes=opt['samplerate'] * opt['duration'])
+                    et = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                    rectime += opt['duration']
+                    with io.BytesIO() as fo:
+                        soundfile.write(fo, rec, opt['samplerate'], format=opt['output_format'])
+                        val = fo.getvalue()
+                        b64 = convert.bytes2b64str(val)
+                        ret = f"{opt['output_format']},{st},{et},{st}.{opt['output_format']},"+b64
+                        yield 0, ret
+        except KeyboardInterrupt as e:
+            logger.info(f'stop record. {e}')
+        except Exception as e:
+            logger.error(f'{e}', exc_info=True)

@@ -1,13 +1,12 @@
 from cmdbox.app import common, client, feature
 from cmdbox.app.commons import redis_client
-from faster_whisper import WhisperModel
 from pathlib import Path
 from typing import Dict, Any, Tuple, Union, List
 import argparse
 import logging
 
 
-class WhisperStop(feature.Feature):
+class WhisperStop(feature.OneshotNotifyEdgeFeature):
     def get_mode(self) -> Union[str, List[str]]:
         """
         この機能のモードを返します
@@ -38,16 +37,16 @@ class WhisperStop(feature.Feature):
             discription_ja="配備済みモデルを停止します。",
             discription_en="Stop deployed model.",
             choice=[
-                dict(opt="host", type="str", default=self.default_host, required=True, multi=False, hide=True, choice=None,
+                dict(opt="host", type="str", default=self.default_host, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのサービスホストを指定します。",
                      discription_en="Specify the service host of the Redis server."),
-                dict(opt="port", type="int", default=self.default_port, required=True, multi=False, hide=True, choice=None,
+                dict(opt="port", type="int", default=self.default_port, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのサービスポートを指定します。",
                      discription_en="Specify the service port of the Redis server."),
-                dict(opt="password", type="str", default=self.default_pass, required=True, multi=False, hide=True, choice=None,
+                dict(opt="password", type="str", default=self.default_pass, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのアクセスパスワード(任意)を指定します。省略時は `password` を使用します。",
                      discription_en="Specify the access password of the Redis server (optional). If omitted, `password` is used."),
-                dict(opt="svname", type="str", default="server", required=True, multi=False, hide=True, choice=None,
+                dict(opt="svname", type="str", default="server", required=True, multi=False, hide=True, choice=None, web="readonly",
                      discription_ja="サーバーのサービス名を指定します。省略時は `server` を使用します。",
                      discription_en="Specify the service name of the inference server. If omitted, `server` is used."),
                 dict(opt="name", type="str", default=None, required=True, multi=False, hide=False, choice=None,

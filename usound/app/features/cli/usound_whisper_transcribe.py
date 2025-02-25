@@ -6,13 +6,10 @@ from typing import Dict, Any, Tuple, Union, List
 import argparse
 import logging
 import io
-import json
-import numpy as np
-import soundfile
 import sys
 
 
-class WhisperTranscribe(feature.Feature):
+class WhisperTranscribe(feature.ResultEdgeFeature):
     def get_mode(self) -> Union[str, List[str]]:
         """
         この機能のモードを返します
@@ -43,16 +40,16 @@ class WhisperTranscribe(feature.Feature):
             discription_ja="配備済みモデルを使用してテキスト抽出を行います。",
             discription_en="Perform text extraction using the deployed model.",
             choice=[
-                dict(opt="host", type="str", default=self.default_host, required=True, multi=False, hide=True, choice=None,
+                dict(opt="host", type="str", default=self.default_host, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのサービスホストを指定します。",
                      discription_en="Specify the service host of the Redis server."),
-                dict(opt="port", type="int", default=self.default_port, required=True, multi=False, hide=True, choice=None,
+                dict(opt="port", type="int", default=self.default_port, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのサービスポートを指定します。",
                      discription_en="Specify the service port of the Redis server."),
-                dict(opt="password", type="str", default=self.default_pass, required=True, multi=False, hide=True, choice=None,
+                dict(opt="password", type="str", default=self.default_pass, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのアクセスパスワード(任意)を指定します。省略時は `password` を使用します。",
                      discription_en="Specify the access password of the Redis server (optional). If omitted, `password` is used."),
-                dict(opt="svname", type="str", default="server", required=True, multi=False, hide=True, choice=None,
+                dict(opt="svname", type="str", default="server", required=True, multi=False, hide=True, choice=None, web="readonly",
                      discription_ja="サーバーのサービス名を指定します。省略時は `server` を使用します。",
                      discription_en="Specify the service name of the inference server. If omitted, `server` is used."),
                 dict(opt="name", type="str", default=None, required=True, multi=False, hide=False, choice=None,
@@ -184,6 +181,7 @@ class WhisperTranscribe(feature.Feature):
             b64str = None
             def capture_proc(f):
                 for line in f:
+                    line = line.decode('utf-8') if isinstance(line, bytes) else line
                     capture_data = line.strip().split(',')
                     if len(capture_data) < 5: continue
                     t = capture_data[0]

@@ -4,12 +4,11 @@ from faster_whisper import WhisperModel
 from pathlib import Path
 from typing import Dict, Any, Tuple, Union, List
 import argparse
-import datetime
 import logging
 import json
 
 
-class WhisperDeploy(feature.Feature):
+class WhisperDeploy(feature.OneshotNotifyEdgeFeature):
     def get_mode(self) -> Union[str, List[str]]:
         """
         この機能のモードを返します
@@ -40,22 +39,22 @@ class WhisperDeploy(feature.Feature):
             discription_ja="音声からテキスト抽出するモデルを配備します。",
             discription_en="Deploy a model to extract text from audio.",
             choice=[
-                dict(opt="host", type="str", default=self.default_host, required=True, multi=False, hide=True, choice=None,
+                dict(opt="host", type="str", default=self.default_host, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのサービスホストを指定します。",
                      discription_en="Specify the service host of the Redis server."),
-                dict(opt="port", type="int", default=self.default_port, required=True, multi=False, hide=True, choice=None,
+                dict(opt="port", type="int", default=self.default_port, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのサービスポートを指定します。",
                      discription_en="Specify the service port of the Redis server."),
-                dict(opt="password", type="str", default=self.default_pass, required=True, multi=False, hide=True, choice=None,
+                dict(opt="password", type="str", default=self.default_pass, required=True, multi=False, hide=True, choice=None, web="mask",
                      discription_ja="Redisサーバーのアクセスパスワード(任意)を指定します。省略時は `password` を使用します。",
                      discription_en="Specify the access password of the Redis server (optional). If omitted, `password` is used."),
-                dict(opt="svname", type="str", default="server", required=True, multi=False, hide=True, choice=None,
+                dict(opt="svname", type="str", default="server", required=True, multi=False, hide=True, choice=None, web="readonly",
                      discription_ja="サーバーのサービス名を指定します。省略時は `server` を使用します。",
                      discription_en="Specify the service name of the inference server. If omitted, `server` is used."),
                 dict(opt="name", type="str", default=None, required=True, multi=False, hide=False, choice=None,
                      discription_ja="AIモデルの登録名を指定します。",
                      discription_en="Specify the registration name of the AI model."),
-                dict(opt="model_size", type="str", default="small", required=False, multi=False, hide=False, choice=["tiny", "small", "base", "medium", "large-v1", "large-v2"],
+                dict(opt="model_size", type="str", default="small", required=False, multi=False, hide=False, choice=["tiny", "small", "base", "medium", "large-v1", "large-v2", "large-v3-turbo"],
                      discription_ja="モデルのサイズを指定します。",
                      discription_en="Specifies the size of the model."),
                 dict(opt="device", type="str", default="cpu", required=False, multi=False, hide=False, choice=["auto", "cpu", "cuda"],
@@ -64,7 +63,7 @@ class WhisperDeploy(feature.Feature):
                 dict(opt="device_index", type="int", default=None, required=False, multi=False, hide=True, choice=None,
                      discription_ja="`device` でGPUが使用されるときのGPUIDを指定します。",
                      discription_en="Specifies the GPUID when the GPU is used in `device`."),
-                dict(opt="compute_type", type="str", default="auto", required=False, multi=False, hide=False, choice=["default","auto","int8","int8_float16","int16","float16","float32"],
+                dict(opt="compute_type", type="str", default="int8", required=False, multi=False, hide=False, choice=["default","auto","int8","int8_float16","int16","float16","float32"],
                      discription_ja="モデルの重みタイプを指定します。",
                      discription_en="Specifies the weight type of the model."),
                 dict(opt="cpu_threads", type="int", default=0, required=False, multi=False, hide=True, choice=None,
