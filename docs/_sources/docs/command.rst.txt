@@ -11,3 +11,4 @@ See below for available options for the various commands.
 
    Speaker <cmd_speaker.rst>
    Whisper <cmd_whisper.rst>
+   Install <cmd_install.rst>
