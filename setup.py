@@ -15,7 +15,7 @@ DOWNLOAD_URL = URL
 VERSION = version.__version__
 PYTHON_REQUIRES = '>=3.8'
 INSTALL_REQUIRES = [
-    'cmdbox>=0.5.0,<0.5.1',
+    'cmdbox>=0.5.0.1,<0.5.1',
     'faster-whisper',
     'soundcard',
     'soundfile',

@@ -1,5 +1,6 @@
 from cmdbox.app import common, edge, feature
 from cmdbox.app.commons import convert
+from cmdbox.app.options import Options
 from pathlib import Path
 from typing import Dict, Any, Tuple, Union, List
 import argparse
@@ -38,32 +39,32 @@ class SpeakerCapture(feature.Feature):
             Dict[str, Any]: オプション
         """
         return dict(
-            type="str", default=None, required=False, multi=False, hide=False, use_redis=self.USE_REDIS_FALSE,
+            type=Options.T_STR, default=None, required=False, multi=False, hide=False, use_redis=self.USE_REDIS_FALSE,
             discription_ja="指定したスピーカーから出力される音声を録音します。",
             discription_en="Record audio output from the specified speaker.",
             choice=[
-                dict(opt="spid", type="str", default=None, required=False, multi=False, hide=False, choice=None,
+                dict(opt="spid", type=Options.T_STR, default=None, required=False, multi=False, hide=False, choice=None,
                      discription_ja="録音するスピーカーをIDで指定します。指定しなかった場合最初に見つかったスピーカーを使用します。",
                      discription_en="Specify the speaker to record by ID. If not specified, the first speaker found will be used."),
-                dict(opt="spname", type="str", default=None, required=False, multi=False, hide=False, choice=None,
+                dict(opt="spname", type=Options.T_STR, default=None, required=False, multi=False, hide=False, choice=None,
                      discription_ja="録音するスピーカーを名前で指定します。指定しなかった場合最初に見つかったスピーカーを使用します。",
                      discription_en="Specify the speaker to be recorded by name. If not specified, the first speaker found will be used."),
-                dict(opt="samplerate", type="int", default=48000, required=False, multi=False, hide=False, choice=[48000, 44100, 22050, 16000, 11025, 8000],
+                dict(opt="samplerate", type=Options.T_INT, default=48000, required=False, multi=False, hide=False, choice=[48000, 44100, 22050, 16000, 11025, 8000],
                      discription_ja="サンプリングレートを指定します。",
                      discription_en="Specifies the sampling rate."),
-                dict(opt="duration", type="float", default=10.0, required=False, multi=False, hide=False, choice=None,
+                dict(opt="duration", type=Options.T_FLOAT, default=10.0, required=False, multi=False, hide=False, choice=None,
                      discription_ja="録音時のバッファリングする最大秒数を指定します。この時間内でチャンキングされます。",
                      discription_en="Specifies the maximum number of seconds to buffer during recording. It will be chunked within this time."),
-                dict(opt="rectime", type="float", default=30.0, required=False, multi=False, hide=False, choice=None,
+                dict(opt="rectime", type=Options.T_FLOAT, default=30.0, required=False, multi=False, hide=False, choice=None,
                      discription_ja="録音時間を指定します。0以下の場合はコマンドが停止されるまで続けます。",
                      discription_en="Specifies the recording time; if it is less than or equal to 0, it continues until the command is stopped."),
-                dict(opt="output_dir", type="dir", default=None, required=False, multi=False, hide=False, choice=None,
+                dict(opt="output_dir", type=Options.T_DIR, default=None, required=False, multi=False, hide=False, choice=None,
                      discription_ja="録音ファイルを保存するディレクトリを指定します。",
                      discription_en="Specifies the directory where the recording files are stored."),
-                dict(opt="output_csv", type="file", default=None, required=False, multi=False, hide=False, choice=None,
+                dict(opt="output_csv", type=Options.T_FILE, default=None, required=False, multi=False, hide=False, choice=None,
                      discription_ja="録音ファイルをcsvファイルとして保存します。指定した場合、標準出力は行いません。",
                      discription_en="Saves the recording file as a csv file. If specified, no standard output is performed."),
-                dict(opt="output_format", type="str", default="wav", required=False, multi=False, hide=False,
+                dict(opt="output_format", type=Options.T_STR, default="wav", required=False, multi=False, hide=False,
                      choice=["aiff", "au", "flac", "mat", "ogg", "paf", "mp3", "raw", "sph", "svx", "wav", "voc"],
                      discription_ja="音声ファイルのフォーマットを指定します。",
                      discription_en="Specifies the format of the audio file."),
