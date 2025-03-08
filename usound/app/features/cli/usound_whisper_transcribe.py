@@ -37,7 +37,7 @@ class WhisperTranscribe(feature.ResultEdgeFeature):
             Dict[str, Any]: オプション
         """
         return dict(
-            type=Options.T_STR, default=None, required=False, multi=False, hide=False, use_redis=self.USE_REDIS_FALSE,
+            use_redis=self.USE_REDIS_TRUE, nouse_webmode=False,
             discription_ja="配備済みモデルを使用してテキスト抽出を行います。",
             discription_en="Perform text extraction using the deployed model.",
             choice=[

@@ -39,7 +39,7 @@ class SpeakerCapture(feature.Feature):
             Dict[str, Any]: オプション
         """
         return dict(
-            type=Options.T_STR, default=None, required=False, multi=False, hide=False, use_redis=self.USE_REDIS_FALSE,
+            use_redis=self.USE_REDIS_FALSE, nouse_webmode=False,
             discription_ja="指定したスピーカーから出力される音声を録音します。",
             discription_en="Record audio output from the specified speaker.",
             choice=[

@@ -34,7 +34,7 @@ class WhisperStop(feature.OneshotNotifyEdgeFeature):
             Dict[str, Any]: オプション
         """
         return dict(
-            type=Options.T_STR, default=None, required=False, multi=False, hide=False, use_redis=self.USE_REDIS_FALSE,
+            use_redis=self.USE_REDIS_TRUE, nouse_webmode=False,
             discription_ja="配備済みモデルを停止します。",
             discription_en="Stop deployed model.",
             choice=[
