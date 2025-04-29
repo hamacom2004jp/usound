@@ -156,25 +156,26 @@ class SpeakerCapture(feature.Feature):
             Tuple[int, Dict[str, Any], Any]: 終了コード, 結果
         """
         import soundcard
-        spname = None
-        if not opt['spid'] and not opt['spname']:
-            sl = soundcard.all_speakers()
-            if len(sl) == 0:
-                raise ValueError("No speakers.")
-            spname = sl[0].name
-        elif opt['spid']:
-            for s in soundcard.all_speakers():
-                if s.id == opt['spid']:
-                    spname = s.name
-                    break
-        elif opt['spname']:
-            for s in soundcard.all_speakers():
-                if s.name == opt['spname']:
-                    spname = s.name
-                    break
+        self.spname = None if not hasattr(self, 'spname') else self.spname
+        if self.spname is None:
+            if not opt['spid'] and not opt['spname']:
+                sl = soundcard.all_speakers()
+                if len(sl) == 0:
+                    raise ValueError("No speakers.")
+                self.spname = sl[0].name
+            elif opt['spid']:
+                for s in soundcard.all_speakers():
+                    if s.id == opt['spid']:
+                        self.spname = s.name
+                        break
+            elif opt['spname']:
+                for s in soundcard.all_speakers():
+                    if s.name == opt['spname']:
+                        self.spname = s.name
+                        break
         try:
             rectime = 0
-            with soundcard.get_microphone(id=spname, include_loopback=True).recorder(samplerate=opt['samplerate']) as mic:
+            with soundcard.get_microphone(id=self.spname, include_loopback=True).recorder(samplerate=opt['samplerate']) as mic:
                 while rectime < opt['rectime']:
                     st = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                     rec = mic.record(numframes=opt['samplerate'] * opt['duration'])
@@ -185,7 +186,8 @@ class SpeakerCapture(feature.Feature):
                         val = fo.getvalue()
                         b64 = convert.bytes2b64str(val)
                         ret = f"{opt['output_format']},{st},{et},{st}.{opt['output_format']},"+b64
-                        yield 0, ret
+                        yield 0 if rectime < opt['rectime'] else 1, ret
+                yield 1, ""
         except KeyboardInterrupt as e:
             logger.info(f'stop record. {e}')
         except Exception as e:

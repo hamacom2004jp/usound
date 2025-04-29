@@ -1,8 +1,9 @@
-from cmdbox.app import common, feature
+from cmdbox.app import common, feature, edge
 from cmdbox.app.options import Options
 from typing import Dict, Any, Tuple, Union, List
 import argparse
 import logging
+import time
 
 
 class SpeakerList(feature.OneshotResultEdgeFeature):
@@ -77,7 +78,7 @@ class SpeakerList(feature.OneshotResultEdgeFeature):
             speakers = list()
             for s in soundcard.all_speakers():
                 sp = dict(id=s.id, name=s.name, channels=s.channels)
-                if args.spid is not None or args.spname is not None:
+                if args.spid or args.spname:
                     if args.spid==s.id:
                         speakers.append(sp)
                         break
@@ -94,3 +95,13 @@ class SpeakerList(feature.OneshotResultEdgeFeature):
         if 'success' not in ret:
             return 1, ret, None
         return 0, ret, None
+
+    def edgerun(self, opt:Dict[str, Any], tool:edge.Tool, logger:logging.Logger, timeout:int, prevres:Any=None):
+        opt['format'] = 'format' in opt and opt['format'] is True
+        args = argparse.Namespace(**{k:common.chopdq(v) for k,v in opt.items()})
+        status, ret, _ = self.apprun(logger, args, time.time(), [])
+        if status == 0:
+            status, res = tool.pub_result(opt['title'], ret, timeout)
+        else:
+            tool.notify(ret)
+        yield status, ret
