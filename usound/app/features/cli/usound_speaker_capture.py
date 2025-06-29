@@ -1,4 +1,4 @@
-from cmdbox.app import common, edge, feature
+from cmdbox.app import common, edge, edge_tool, feature
 from cmdbox.app.commons import convert
 from cmdbox.app.options import Options
 from pathlib import Path
@@ -141,7 +141,7 @@ class SpeakerCapture(feature.Feature):
         common.print_format("", False, tm, None, False, pf=pf)
         return 0, "", None
 
-    def edgerun(self, opt:Dict[str, Any], tool:edge.Tool, logger:logging.Logger, timeout:int, prevres:Any=None):
+    def edgerun(self, opt:Dict[str, Any], tool:edge_tool.Tool, logger:logging.Logger, timeout:int, prevres:Any=None):
         """
         この機能のエッジ側の実行を行います
 

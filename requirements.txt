@@ -1,4 +1,5 @@
 cmdbox
+collectlicense
 faster-whisper
 #pyyaml
 #transformers

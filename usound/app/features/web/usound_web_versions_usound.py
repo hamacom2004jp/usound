@@ -15,7 +15,7 @@ class VersionsUsound(feature.WebFeature):
         """
         @app.get('/versions_usound')
         async def versions_usound(req:Request, res:Response):
-            signin = web.check_signin(req, res)
+            signin = web.signin.check_signin(req, res)
             if signin is not None:
                 raise HTTPException(status_code=401, detail=self.DEFAULT_401_MESSAGE)
             logo = [version.__logo__]

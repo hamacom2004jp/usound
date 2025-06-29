@@ -1,9 +1,9 @@
 import datetime
 
-dt_now = datetime.datetime(2025, 4, 29)
+dt_now = datetime.datetime(2025, 6, 29)
 __appid__ = 'usound'
 __title__ = 'usound (kNowlege the Sound)'
-__version__ = '0.1.4'
+__version__ = '0.1.6'
 __copyright__ = f'Copyright © 2023-{dt_now.strftime("%Y")} hamacom2004jp'
 __pypiurl__ = 'https://pypi.org/project/usound/'
 __srcurl__ = 'https://github.com/hamacom2004jp/usound'
@@ -18,6 +18,7 @@ __logo__ = '''
  ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝╚═════╝ '''
 __description__ = f'{__title__} {__version__}\n\n' + \
                   f'{__copyright__}\n' + \
+                  f'Build Date: {dt_now.strftime("%Y-%m-%d")}\n' + \
                   f'Web Site: PyPi <{__pypiurl__}>\n' + \
                   f'Web Site: SorceCode <{__srcurl__}>\n' + \
                   f'Web Site: Document <{__docurl__}>\n' + \

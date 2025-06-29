@@ -1,4 +1,4 @@
-from cmdbox.app import common, feature, edge
+from cmdbox.app import common, feature, edge_tool
 from cmdbox.app.options import Options
 from typing import Dict, Any, Tuple, Union, List
 import argparse
@@ -96,7 +96,7 @@ class SpeakerList(feature.OneshotResultEdgeFeature):
             return 1, ret, None
         return 0, ret, None
 
-    def edgerun(self, opt:Dict[str, Any], tool:edge.Tool, logger:logging.Logger, timeout:int, prevres:Any=None):
+    def edgerun(self, opt:Dict[str, Any], tool:edge_tool.Tool, logger:logging.Logger, timeout:int, prevres:Any=None):
         opt['format'] = 'format' in opt and opt['format'] is True
         args = argparse.Namespace(**{k:common.chopdq(v) for k,v in opt.items()})
         status, ret, _ = self.apprun(logger, args, time.time(), [])
